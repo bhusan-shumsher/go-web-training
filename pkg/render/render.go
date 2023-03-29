@@ -1,10 +1,12 @@
 package render
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
-	"text/template"
+
+	"github.com/bhusan-shumsher/go-web-training/pkg/config"
 )
 
 // var tc = make(map[string]*template.Template)
@@ -43,25 +45,32 @@ import (
 // 	return nil
 // }
 
+var app *config.AppConfig
+
+// NewTemplate sets the config for the template package
+func NewTemplate(a *config.AppConfig) {
+	app = a
+}
 func RenderTemplate(w http.ResponseWriter, tmpl string) {
-	// create a template cache
-	tc, err := createTemplateCache()
-	if err != nil {
-		log.Fatal(err)
+	var tc map[string]*template.Template
+	if app.UseCache {
+		tc = app.TemplateCache
+	} else {
+		tc, _ = CreateTemplateCache()
 	}
 	// get the requested template from the cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("couldnt get template frm the cache")
 	}
 	//render the template
-	err = t.Execute(w, nil)
+	err := t.Execute(w, nil)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
 	// get all the names ending with .page.tmpl
