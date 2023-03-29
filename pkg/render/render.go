@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/bhusan-shumsher/go-web-training/pkg/config"
+	"github.com/bhusan-shumsher/go-web-training/pkg/models"
 )
 
 // var tc = make(map[string]*template.Template)
@@ -51,7 +52,11 @@ var app *config.AppConfig
 func NewTemplate(a *config.AppConfig) {
 	app = a
 }
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	return td
+}
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	if app.UseCache {
 		tc = app.TemplateCache
@@ -64,7 +69,8 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 		log.Fatal("couldnt get template frm the cache")
 	}
 	//render the template
-	err := t.Execute(w, nil)
+	td = AddDefaultData(td)
+	err := t.Execute(w, td)
 	if err != nil {
 		log.Println(err)
 	}
